@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python to Rust Converter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .converter-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .input-section, .output-section {
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .output-section {
+            background: #ffffff;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .section-header i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .python-header {
+            color: #3776ab;
+        }
+
+        .rust-header {
+            color: #ce422b;
+        }
+
+        .code-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        textarea, .code-output {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            resize: none;
+            flex: 1;
+            min-height: 400px;
+        }
+
+        textarea {
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .code-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            border-color: #4a5568;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #c53030;
+        }
+
+        .example-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .example-btn {
+            padding: 8px 16px;
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .example-btn:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        .loading-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #3498db;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+
+        .loading-indicator i {
+            font-size: 16px;
+        }
+
+        .model-status {
+            padding: 10px 20px;
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .model-status.loading {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+
+        .model-status.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+
+        .stats {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .converter-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fab fa-python"></i> Python to Rust Converter <i class="fab fa-rust"></i></h1>
+            <p>Transform your Python code into equivalent Rust code with our advanced transpiler</p>
+        </header>
+
+        <form method="post" action="/convert-form">
+            <div class="converter-container">
+                <div class="input-section">
+                    <div class="section-header python-header">
+                        <i class="fab fa-python"></i>
+                        Python Code
+                    </div>
+                    <div class="code-container">
+                        <textarea name="python_code" placeholder="Enter your Python code here...">{{ python_code or '' }}</textarea>
+                        <div class="example-buttons">
+                            <span class="example-btn" onclick="loadExample('hello')">Hello World</span>
+                            <span class="example-btn" onclick="loadExample('fibonacci')">Fibonacci</span>
+                            <span class="example-btn" onclick="loadExample('loops')">Loops</span>
+                            <span class="example-btn" onclick="loadExample('functions')">Functions</span>
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <button type="submit" class="btn btn-primary" id="convert-btn">
+                            <i class="fas fa-magic"></i>
+                            Convert to Rust
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearCode()">
+                            <i class="fas fa-eraser"></i>
+                            Clear
+                        </button>
+                        <div class="loading-indicator" id="loading-indicator" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <span id="loading-text">Converting with LLM...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="output-section">
+                    <div class="section-header rust-header">
+                        <i class="fab fa-rust"></i>
+                        Generated Rust Code
+                    </div>
+                    <div class="code-container">
+                        <div class="code-output" id="rust-output">{{ rust_code or '// Your converted Rust code will appear here...' }}</div>
+                    </div>
+                    <div class="controls">
+                        <button type="button" class="btn btn-secondary" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i>
+                            Copy Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        {% if error %}
+        <div class="error-message">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="stats">
+            <span>Powered by Qwen2.5-Coder-3B LLM + Fallback Rules</span>
+            <span>Supporting Python 3.x → Rust 1.x</span>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        const examples = {
+            hello: `print("Hello, World!")
+print("Welcome to Python to Rust converter!")`,
+            
+            fibonacci: `def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+
+for i in range(10):
+    print(fibonacci(i))`,
+            
+            loops: `numbers = [1, 2, 3, 4, 5]
+for num in numbers:
+    if num % 2 == 0:
+        print(f"{num} is even")
+    else:
+        print(f"{num} is odd")`,
+        
+            functions: `def calculate_area(length, width):
+    return length * width
+
+def main():
+    l = 10
+    w = 5
+    area = calculate_area(l, w)
+    print(f"Area: {area}")
+
+main()`
+        };
+
+        function loadExample(type) {
+            const textarea = document.querySelector('textarea[name="python_code"]');
+            textarea.value = examples[type];
+            textarea.focus();
+        }
+
+        function clearCode() {
+            document.querySelector('textarea[name="python_code"]').value = '';
+            document.getElementById('rust-output').textContent = '// Your converted Rust code will appear here...';
+        }
+
+        function copyToClipboard() {
+            const rustCode = document.getElementById('rust-output').textContent;
+            navigator.clipboard.writeText(rustCode).then(() => {
+                const btn = event.target.closest('.btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+
+        // Auto-resize textarea
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Handle form submission with loading states
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const convertBtn = document.getElementById('convert-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const loadingText = document.getElementById('loading-text');
+            const pythonCode = document.querySelector('textarea[name="python_code"]').value;
+            
+            if (!pythonCode.trim()) {
+                e.preventDefault();
+                alert('Please enter some Python code to convert.');
+                return;
+            }
+            
+            // Show loading state
+            convertBtn.disabled = true;
+            loadingIndicator.style.display = 'flex';
+            loadingText.textContent = 'Loading Qwen2.5-Coder-3B model...';
+            
+            // Simulate loading stages
+            setTimeout(() => {
+                loadingText.textContent = 'Converting Python to Rust...';
+            }, 2000);
+            
+            setTimeout(() => {
+                loadingText.textContent = 'Generating optimized Rust code...';
+            }, 4000);
+        });
+
+        // Reset loading state if form submission fails
+        window.addEventListener('load', function() {
+            const convertBtn = document.getElementById('convert-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            
+            convertBtn.disabled = false;
+            loadingIndicator.style.display = 'none';
+        });
+    </script>
+</body>
+</html> 
