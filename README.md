@@ -381,14 +381,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 👥 Authors
 
-- **AI Assistant** - Initial development and core transpiler logic
-
-## 🙏 Acknowledgments
-
-- Python AST module for code parsing
-- FastAPI for the web framework
-- The Rust community for language inspiration
-- All contributors and users of this project
+- **Mayank Kumar Kashyap** - Initial development and core transpiler logic
 
 ---
 
