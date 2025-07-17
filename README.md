@@ -375,10 +375,6 @@ We welcome contributions! Here's how you can help:
 - **🎯 Specialized Models**: Domain-specific conversion (web, data science, systems)
 - **🔄 Multi-step Refinement**: Iterative code improvement and optimization
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## 👥 Authors
 
 - **Mayank Kumar Kashyap** - Initial development and core transpiler logic
